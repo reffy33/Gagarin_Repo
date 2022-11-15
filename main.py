@@ -126,7 +126,7 @@ def formatter(data, dict_naming):
     return formated_data
 
 
-def print_vacancies(data_vacancies, dict_naming):
+def print_vacancies(data_vacancies, dict_naming, print_funcs, print_vars):
     i = 1
     end = len(data_vacancies)
     formated_data = formatter(data_vacancies, dict_naming)
@@ -138,12 +138,14 @@ def print_vacancies(data_vacancies, dict_naming):
 
     for key in data_keys:
         width_dict[key] = 20
+
     table._max_width = width_dict
     table.hrules = prettytable.ALL
 
     for item in formated_data:
-        new_row = []
-        new_row.append(i)
+
+        new_row = [i]
+
         for value in item.values():
             if isinstance(value, list):
                 value = '\n'.join(value)
@@ -152,7 +154,8 @@ def print_vacancies(data_vacancies, dict_naming):
             new_row.append(value)
         table.add_row(new_row)
         i += 1
-    print(table)
+
+    print(print_funcs[print_vars['type']](print_vars, table))
 
 
 def main():
@@ -193,9 +196,35 @@ def main():
                "False": "Нет",
                "FALSE": "Нет"}
 
+    print_funcs = {
+        '': lambda vars, table: table.get_string(start=vars['start'], end=vars['end'], fields=vars['fields']),
+        'no start_end' : lambda vars, table: table.get_string(fields=vars['fields']),
+        'no end': lambda vars, table: table.get_string(start=vars['start'], fields=vars['fields']),
+        ' no fields': lambda vars, table: table.get_string(start=vars['start'], end=vars['end']),
+        'no end no fields': lambda vars, table: table.get_string(start=vars['start']),
+        'no start_end no fields': lambda vars, table: table}
+
     ru_dict = {**cells_ru, **currencies_ru, **experience_ru, **bool_ru}
     file_path = input()
-    # file_path = 'testcsv1.csv'
+    start_end_str = input()
+    fields = input()
+
+    print_vars = {'type': ''}
+    if start_end_str == '':
+        print_vars['type'] = 'no start_end'
+    elif ' ' in start_end_str:
+        print_vars['start'], print_vars['end'] = map(int, start_end_str.split())
+        print_vars['start'] -= 1
+    else:
+        print_vars['start'] = int(start_end_str)
+        print_vars['start'] -= 1
+        print_vars['type'] = 'no end'
+
+    if fields == '':
+        print_vars['type'] = print_vars['type'] + ' no fields'
+    else:
+        print_vars['fields'] = ['№'] + fields.split(', ')
+
 
     header, list_naming = csv_reader(file_path)
     if header == '':
@@ -204,7 +233,8 @@ def main():
         print('Нет данных')
     else:
         vacancies = csv_filer(header, list_naming)
-        print_vacancies(vacancies, ru_dict)
+        print_vacancies(vacancies, ru_dict, print_funcs, print_vars)
+
 
 if __name__ == '__main__':
     main()
