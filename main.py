@@ -5,6 +5,11 @@ from datetime import datetime
 
 
 def check_for_empty_str(list):
+    """
+    Проверяет список на отсутствие пустых строк
+    :param list: (list) Список для проверки
+    :return: bool: True если в списке нет пустых строк, False если они есть
+    """
     for item in list:
         if item == '' or item == 'None':
             return False
@@ -12,17 +17,33 @@ def check_for_empty_str(list):
 
 
 def clean_spaces(str):
+    """
+    Отчищает строку от лишних пробельных символов
+    :param str: (str) входная строка
+    :return: str: отчищенная от лишних пробелов строка
+    """
     str = re.sub(r'\s+', ' ', str)
     str = str.strip()
     return str
 
 
 def clean_html_tags(str):
+    """
+    Отчищает строку от html тэгов типа <тэг>
+    :param str: (str) входная строка
+    :return: str: строка очищенная от html тэгов
+    """
     str = re.sub(r'<[^>]+>', '', str)
     return str
 
 
 def csv_reader(file_name):
+    """
+    Считывает данные из csv файла
+    :param file_name: (str) путь до файла
+    :return: header (list): список содержащий заголовки
+    :return: list_naming (list): список которых хранит в себе последующие строки csv файла в виде списков
+    """
     list_naming = []
     with open(file_name, encoding='utf-8-sig') as f:
         reader = csv.reader(f)
@@ -40,6 +61,13 @@ def csv_reader(file_name):
 
 
 def csv_filer(header, list_naming):
+    """
+    Создаёт список из словарей вакансий, в котором ключом является заголовок столбца,
+    а значение - содержимым строки с этим заголовком
+    :param header: (list) список заголовков
+    :param list_naming: (list) список строк
+    :return: list: данные о вакансиях
+    """
     data_vacancies = []
     for name in list_naming:
         i = 0
@@ -68,17 +96,34 @@ def csv_filer(header, list_naming):
 
 
 def format_num(num):
+    """
+    Форматирует сумма с пробелом в качестве разделителя
+    например 10.000 --> 10 000
+    :param num: (str) входная строка
+    :return str: отфоматированная сумма
+    """
     num = int(float(num))
     str = f'{num:,}'
     return ' '.join(str.split(','))
 
 
 def format_date(str):
+    """
+    Форматирует дату в формат ДД.ММ.ГГГГ
+    :param str: (str) входная строка с датой
+    :return: отформатированная дата
+    """
     date = datetime.strptime(str, '%Y-%m-%dT%H:%M:%S%z')
     return date.__format__('%d.%m.%Y')
 
 
 def format_salary(dict):
+    """
+    Форматирует поля зарплаты в словаре в формат
+    [Сумма от] - [Сумма до] ([валюта оклада]) Без вычета налогов/С вычетом налогов
+    :param dict: (dict) входной словарь
+    :return dict: словарь с отформатированными полями с зарплатой
+    """
     salary_from = format_num(dict['Нижняя граница вилки оклада'])
     salary_to = format_num(dict['Верхняя граница вилки оклада'])
     dict_salary_gross = dict['Оклад указан до вычета налогов']
@@ -105,6 +150,12 @@ def format_salary(dict):
 
 
 def translate_dict(data, dict_naming):
+    """
+    Переводит данные в словаре на русский с помощью словаря dict_naming
+    :param data: (dict) входной словарь с данными на русском
+    :param dict_naming: (dict) словарь формата {'фраза на английском' : 'фраза на русском'}
+    :return: dict: переведённый словарь
+    """
     translated_data = {}
     for key, value in data.items():
         if isinstance(value, str):
@@ -117,6 +168,13 @@ def translate_dict(data, dict_naming):
 
 
 def formatter(data, dict_naming):
+    """
+    Вспомогательная функция, переводит словарь на русский, форматирует поля с зарплатой и датами,
+    с помощью функций translate_dict, format_salary, format_date
+    :param data: (list[dict]) входные данные, требующие форматирования
+    :param dict_naming: (dict) словарь для перевода фраз на русский
+    :return: list[dict]: отформатированные данные
+    """
     formated_data = []
     for item in data:
         formated_dict = translate_dict(item, dict_naming)
@@ -127,6 +185,29 @@ def formatter(data, dict_naming):
 
 
 def print_vacancies(data_vacancies, dict_naming, print_funcs, print_vars):
+    """
+    Форматирует данные о вакансиях, выводит из в таблицу с помощью библиотеки PrettyTables
+    :param data_vacancies: (list[dict]) данные о вакансиях
+    :param dict_naming: (dict) словарь для перевода фраз на русский
+    :param print_funcs: (dict[str : lambda]) словарь содержащий лямбда функции для печати таблицы
+    и их краткое словестное описание
+    Например:
+    'no start_end': lambda vars, table: table.get_string(fields=vars['fields']
+
+    :param print_vars: (dict) словарь описывающий параметры печати
+    обязательный ключ type - возможные значения:
+    'no start_end no fields' - печать определённых столбцов таблицы и всех строк
+    'no start_end' - печать определённых столбцов таблицы и всех строк
+    'no end' - печать определённых столбцов таблицы, начиная с определённой строки и до конца таблицы
+    ' no fields' - печать всех столбцов таблицы, начиная и заканчивая на определённой строке
+    'no end no fields' - печать всех столбцов таблицы, начиная с определённой строки и до конца таблицы
+    '' -  печать определённых столбцов таблицы, начиная и заканчивая на определённой строке
+
+    необязательные ключи
+    'start' - строка с которой нужно начать печать таблицы
+    'end' - конечная строка которой нужно закончить печать таблицы (только при наличии ключа 'start')
+    'fields' - список столбцов которые нужно печатать
+    """
     i = 1
     end = len(data_vacancies)
     formated_data = formatter(data_vacancies, dict_naming)
@@ -159,6 +240,10 @@ def print_vacancies(data_vacancies, dict_naming, print_funcs, print_vars):
 
 
 def main():
+    """
+    Создаёт необходимые словари: для перевода фраз на русский, словарь содержащий лямбда функции для печати таблицы,
+    словарь описывающий параметры печати, считывает информацию от пользователя, вызывает print_vacancies для печати
+    """
     cells_ru = {'name': 'Название',
                 'description': 'Описание',
                 'key_skills': 'Навыки',
@@ -198,7 +283,7 @@ def main():
 
     print_funcs = {
         '': lambda vars, table: table.get_string(start=vars['start'], end=vars['end'], fields=vars['fields']),
-        'no start_end' : lambda vars, table: table.get_string(fields=vars['fields']),
+        'no start_end': lambda vars, table: table.get_string(fields=vars['fields']),
         'no end': lambda vars, table: table.get_string(start=vars['start'], fields=vars['fields']),
         ' no fields': lambda vars, table: table.get_string(start=vars['start'], end=vars['end']),
         'no end no fields': lambda vars, table: table.get_string(start=vars['start']),
