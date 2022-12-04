@@ -9,6 +9,17 @@ def check_for_empty_str(list):
     Проверяет список на отсутствие пустых строк
     :param list: (list) Список для проверки
     :return: bool: True если в списке нет пустых строк, False если они есть
+    >>> check_for_empty_str(['123', 123, ''])
+    False
+    >>> check_for_empty_str(['', '', ''])
+    False
+    >>> check_for_empty_str([123, 123, '54234', '56 56'])
+    True
+    >>> check_for_empty_str(['', 'string', 'number'])
+    False
+    >>> check_for_empty_str(['empty', 'empty string'])
+    True
+
     """
     for item in list:
         if item == '' or item == 'None':
@@ -21,6 +32,16 @@ def clean_spaces(str):
     Отчищает строку от лишних пробельных символов
     :param str: (str) входная строка
     :return: str: отчищенная от лишних пробелов строка
+    >>> clean_spaces(' word ')
+    'word'
+    >>> clean_spaces('  word  ')
+    'word'
+    >>> clean_spaces('correct string')
+    'correct string'
+    >>> clean_spaces('incorrect  string')
+    'incorrect string'
+    >>> clean_spaces('  a    lot    of     spaces ')
+    'a lot of spaces'
     """
     str = re.sub(r'\s+', ' ', str)
     str = str.strip()
@@ -32,6 +53,17 @@ def clean_html_tags(str):
     Отчищает строку от html тэгов типа <тэг>
     :param str: (str) входная строка
     :return: str: строка очищенная от html тэгов
+
+    >>> clean_html_tags('Text without html tags')
+    'Text without html tags'
+    >>> clean_html_tags('Do not detele this &nbsp')
+    'Do not detele this &nbsp'
+    >>> clean_html_tags('<b>Delete this please</b>')
+    'Delete this please'
+    >>> clean_html_tags('</a>Why this tag is closed before opened?<a>')
+    'Why this tag is closed before opened?'
+    >>> clean_html_tags('<a></a><html></b></br><button>')
+    ''
     """
     str = re.sub(r'<[^>]+>', '', str)
     return str
@@ -101,6 +133,17 @@ def format_num(num):
     например 10.000 --> 10 000
     :param num: (str) входная строка
     :return str: отфоматированная сумма
+
+    >>> format_num('1')
+    '1'
+    >>> format_num('100')
+    '100'
+    >>> format_num('10000')
+    '10 000'
+    >>> format_num('100000')
+    '100 000'
+    >>> format_num('1000000')
+    '1 000 000'
     """
     num = int(float(num))
     str = f'{num:,}'
@@ -112,6 +155,14 @@ def format_date(str):
     Форматирует дату в формат ДД.ММ.ГГГГ
     :param str: (str) входная строка с датой
     :return: отформатированная дата
+    >>> format_date('2022-07-15T09:56:52+0300')
+    '15.07.2022'
+    >>> format_date('2020-07-05T18:19:30+0300')
+    '05.07.2020'
+    >>> format_date('2022-07-18T01:14:25+0300')
+    '18.07.2022'
+    >>> format_date('2018-12-31T03:16:25+0300')
+    '31.12.2018'
     """
     date = datetime.strptime(str, '%Y-%m-%dT%H:%M:%S%z')
     return date.__format__('%d.%m.%Y')
