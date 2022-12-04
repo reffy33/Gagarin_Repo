@@ -150,6 +150,17 @@ def format_num(num):
     return ' '.join(str.split(','))
 
 
+"""
+def format_date_strptime(str):
+    date = datetime.strptime(str, '%Y-%m-%dT%H:%M:%S%z')
+    return date.__format__('%d.%m.%Y')
+
+
+def format_date_as_string(str):
+    return '.'.join(reversed(str[:10].split('-')))
+"""
+
+
 def format_date(str):
     """
     Форматирует дату в формат ДД.ММ.ГГГГ
@@ -164,7 +175,9 @@ def format_date(str):
     >>> format_date('2018-12-31T03:16:25+0300')
     '31.12.2018'
     """
-    date = datetime.strptime(str, '%Y-%m-%dT%H:%M:%S%z')
+    str = str[:10]
+    year, month, day = map(int, str.split('-'))
+    date = datetime(year, month, day)
     return date.__format__('%d.%m.%Y')
 
 
@@ -360,7 +373,6 @@ def main():
         print_vars['type'] = print_vars['type'] + ' no fields'
     else:
         print_vars['fields'] = ['№'] + fields.split(', ')
-
 
     header, list_naming = csv_reader(file_path)
     if header == '':
